@@ -1,100 +1,169 @@
-import concurrent.futures
 import json, os
-import concurrent
+from menu import Menu
 
-class Atm:
-    id = 1
-    def __init__(self, user, password):
-        self.id = Atm.id
-        self.__balance = 0
-        self.user = user
-        self.__pin = password
+class App:
+    def __init__(self):
+        self.menu = Menu()
+        self.commands: dict = {
+            "b": self.check_balanse,
+            "w": self.withdraw,
+            "d": self.deposit,
+            "p": self.change_pin
+        } 
 
-        Atm.id += 1
+    def comands_menu(self):
+        print('==========Atm menu==========\n"X": Exit\n"B": Check balance\n"W": Withdraw\n"D": Deposit\n"P": Change PIN')
+
+        command = input("Chose from menu...").lower()
+        while command not in ("x","b","w","i","p"):
+            command = input("Chose from menu...").lower()
+        
+        if command == "x":
+            return command
+        else:
+            self.commands[command]()
+        
+
+    def file_path(self):
+        script_path = os.path.abspath(__file__)
+        script_dir = os.path.dirname(script_path)
+        file_path = os.path.join(script_dir, "data.json")
+        return file_path
+    
+    def read_data(self):
+        with open(self.file_path(), mode="r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data
+    
+    def __valide_pin(self,input_pin):
+        try:
+            int(input_pin)
+            if len(input_pin) == 4:
+                return True
+            else:
+                return False
+        except:
+            print("Invalid pin")
+            return False
+
+    def __new_account(self):    
+        print("------------Creating new account------------")
+
+        nik = input("What would be your nickname?: ")
+        pin = input("What PIN do you want: ")
+
+        while self.__valide_pin(pin):
+            pin = input("The PIN must be a 4-digit number: ")
+
+        balance = input("What is your starting input: ")
+
+        while not balance.isdigit():
+            balance = input("Balance must be numeric!: ")
+        
+        self.id = self.menu.add_user(nik, pin, balance)
+
+    def __authorization(self):
+        data = self.read_data()
+
+        id = input("Enter your id: ")
+        while not id.isalnum():
+            id = input("Id must be numeric: ")
+            
+        pin = input("Enter your pin code: ")
+        while not self.__valide_pin(pin):
+            pin = input("The PIN must be a 4-digit number: ")
+        
+        try:
+            if data[id] and data[id]["pin"] == pin:
+                print("successfull authorization...\n")
+                self.id = id
+                return "Access"
+            elif data[id]:
+                tries = 2
+                while tries > 0:
+                    print("Incorrect PIN code!")
+
+                    newpin = input("Enter correct pin code: ")
+
+                    while not self.__valide_pin(pin):
+                        newpin = input("The PIN must be a 4-digit number: ")
+                    
+                    if int(newpin) == data[id]["pin"]:
+                        print("successfull authorization...\n")
+                        self.id = id
+                        return "Access"
+                    else:
+                        tries -= 1
+                        continue
+                else: 
+                    print("Your card has blocked, go to a bank to update your PIN code!\nHave a nice day...")
+                    return "Finish"
+        except:
+            print("User has not found!")
+            print("=========================\n<= Exit || Create account =>\n------------------------")
+
+            next = ""
+            while not next.lower() in ("e", "n"):
+                next = input("Enter \"E\" to exit, \"N\" to create new account:")
+
+            if next.lower() == "e":
+                return "Finish"
+            else:
+                return "New"
+    
+    def run(self):
+        print("-----------The Atm is running-----------")
+
+        value = self.__authorization()
+        if value == "Access" or value == "New":
+            if value == "New":
+                self.__new_account()
+            def rein():
+                next = self.comands_menu()
+                if next == "x":
+                    return print("Process ended...")
+                else:
+                    return rein()
+            rein()
+        else:
+            print("Process ended...")
 
     def check_balanse(self):
-        return print(f"Your balance is: {self.__balance}")
+        print("---------------Checking balance---------------")
+
+        balance = self.menu.check_balance(self.id)
+        return print(balance)
     
-    def checkout(self, password, amount):
-        pass
+    def withdraw(self):
+        print("---------------withdraw money---------------")
 
-def valide_pin(input_text):
-    try:
-        int(input_text)
-        if len(input_text) == 4:
-            return True
-        else:
-            return False
-    except:
-        print("Invalid pin")
-        return False
-    
-def asyn(obj, id, pin):
-    print(type(obj["id"]), type(id))
-    if obj["id"] == id and obj["pin"] == pin:
-        return 2
-    elif obj["id"] == id: 
-        return 1
-    else: 
-        return 0
+        while True:
+            amount = input("Enter withdrawal amount: ")
+            try:
+                number = float(amount)
+                if float(amount) > 0: break 
+                else: print("Deposit money must not negative or 0!")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+        self.menu.withdraw(self.id, float(amount))
 
-def authorization(data):
-    id = input("Enter your id: ")
-    pin = input("Enter your pin code: ")
+    def deposit(self):
+        print("---------------deposit money---------------")
 
-    while not valide_pin(pin):
-        pin = input("The PIN must be a 4-digit number: ")
-    
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(lambda obj: asyn(obj, int(id), int(pin)), data))
-    
-    if 2 in results:
-        print("successfull authorization...\n")
-        return
-    elif 1 in results:
-        tries = 2
-        index = results.index(1)
-        while tries > 0:
-            print("Incorrect PIN code!")
-
-            newpin = input("Enter your pin code: ")
-
-            while not valide_pin(pin):
-                newpin = input("The PIN must be a 4-digit number: ")
-            
-            if int(newpin) == data[index]["pin"]:
-                print("successfull authorization...\n")
-                return
-            else:
-                tries -= 1
-                continue
-        else: 
-            print("Your card has blocked, go to a bank to update your PIN code!\nHave a nice day...")
-            return
-    else:
-        print("User has not found!")
+        while True:
+            amount = input("Enter deposit amount: ")
+            try:
+                number = float(amount)
+                if float(amount) > 0: break 
+                else: print("Deposit money must not negative or 0!")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+        self.menu.deposit(self.id, float(amount))
 
 
-
-    
-
-def atm():
-    script_path = os.path.abspath(__file__)
-    script_dir = os.path.dirname(script_path)
-    file_path = os.path.join(script_dir, "data.json")
-
-    print("Wellcome!")
-
-    with open(file_path, mode="r", encoding="utf-8") as file:
-        data = json.load(file)
-
-    authorization(data)
-
-    
-
-            
-
-
-atm()
-# Atm("lasha", 4747).check_balanse()
+    def change_pin(self):
+        newpin = input("Enter new PIN: ")
+        while not self.__valide_pin(newpin):
+            newpin = input("The PIN must be a 4-digit number: ")
+        
+        self.menu.change_pin(self.id, newpin)
