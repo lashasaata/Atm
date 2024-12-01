@@ -21,6 +21,10 @@ class User:
     def data(self):
         return self.__data
     
+    @data.setter
+    def data(self, new):
+        self.data.append(new)
+    
     @pin.setter
     def pin(self, newpin):
         self.__pin = newpin
