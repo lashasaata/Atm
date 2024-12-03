@@ -68,7 +68,7 @@ class App:
         data = self.read_data()
 
         id = input("Enter your id: ")
-        while not id.isalnum():
+        while not id.isdigit():
             id = input("Id must be numeric: ")
             
         pin = input("Enter your pin code: ")
