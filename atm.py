@@ -16,7 +16,7 @@ class App:
         print('==========Atm menu==========\n"X": Exit\n"B": Check balance\n"W": Withdraw\n"D": Deposit\n"P": Change PIN\n"T": Transfer')
 
         command = input("Chose from menu...").lower()
-        while command not in ("x","b","w","i","p","t"):
+        while command not in ("x","b","w","d","p","t"):
             command = input("Chose from menu...").lower()
             print()
         
@@ -77,7 +77,7 @@ class App:
             print()
         
         try:
-            if data[id] and data[id]["pin"] == int(pin):
+            if data[id] and data[id]["pin"] == pin:
                 print("successfull authorization...\n")
                 self.id = id
 

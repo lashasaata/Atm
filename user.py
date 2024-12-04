@@ -23,7 +23,7 @@ class User:
     
     @data.setter
     def data(self, new):
-        self.data.append(new)
+        self.__data.append(new)
     
     @pin.setter
     def pin(self, newpin):

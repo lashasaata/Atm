@@ -1,1 +1,26 @@
-{}
+{
+    "1": {
+        "id": 1,
+        "name": "lasha",
+        "pin": "1212",
+        "balance": 2.5,
+        "data": [
+            "Create account at 2024-12-04 03:05:32.",
+            "Withdrawed 50.0 lari at 2024-12-04 03:05:49",
+            "Deposit 55.0 lari at 2024-12-04 03:06:04",
+            "PIN: 1111 Has changed into: 1212 at 2024-12-04 03:06:11",
+            "Transfered: 100.0 lari + commission fee: 2.5 lari on user vaxo's account at 2024-12-04 03:07:40."
+        ]
+    },
+    "2": {
+        "id": 2,
+        "name": "vaxo",
+        "pin": 4444,
+        "balance": 130.0,
+        "data": [
+            "Create account at 2024-12-04 03:06:55.",
+            "Withdrawed 20.0 lari at 2024-12-04 03:07:05",
+            "Transfered 100.0 lari from user lasha's account at 2024-12-04 03:07:40."
+        ]
+    }
+}

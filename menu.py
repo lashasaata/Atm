@@ -25,11 +25,15 @@ class Menu:
                 data = json.load(file)
     
                 for id, s in data.items():
-                        self.__students[id] = User(s['name'], s['pin'], s['balance'])
-            except:
+                        user = User(s['name'], s['pin'], s['balance'])
+                        
+                        for entry in s.get('data', []):  # Add each data entry individually
+                            user.data = entry
+                        self.__students[id] = user
+                         
+            except json.decoder.JSONDecodeError:
                 self.__students = {}
 
-            return data
 
     def __store_db(self):            
             newdata = {}
@@ -78,7 +82,7 @@ class Menu:
         print("Successful deposit")
 
     def change_pin(self, id, newpin):
-        self.__students[id].data = f"PIN: \"{self.__students[id].pin}\" Has changed into \"{newpin}\" lari at {self.date()}"
+        self.__students[id].data = f"PIN: {self.__students[id].pin} Has changed into: {newpin} at {self.date()}"
         self.__students[id].pin = newpin
         
         self.__store_db()
@@ -90,14 +94,18 @@ class Menu:
         except:
              print("User has not found!")
              return
-        if amount*102.5/100 > self.__students[id1].balance:
+        
+        if id1 == id2:
+             print("You can not transfer money on your balance!")
+             return
+        elif amount*102.5/100 > self.__students[id1].balance:
              print("You have not enough money to transfer...")
              return
         else:
              self.__students[id2].balance = self.__students[id2].balance + amount
              self.__students[id1].balance = self.__students[id1].balance - amount*102.5/100
 
-             self.__students[id1].data = f"Transfered {amount} lari + commission fee: {amount*0.025} on user {self.__students[id2].nik}'s account at {self.date()}."
+             self.__students[id1].data = f"Transfered: {amount} lari + commission fee: {amount*0.025} lari on user {self.__students[id2].nik}'s account at {self.date()}."
              self.__students[id2].data = f"Transfered {amount} lari from user {self.__students[id1].nik}'s account at {self.date()}."
              self.__store_db()
 
